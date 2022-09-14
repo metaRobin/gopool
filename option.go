@@ -2,12 +2,12 @@ package gopool
 
 import "time"
 
-type Task = interface{}  // 任务
+type Task = interface{} // 任务
 
 // the func to batch process items
 type BatchExecutor = func([]Task) error
 
-// Executor 
+// Executor
 type Executor = func(Task) error
 
 // the func to handle error
@@ -19,14 +19,14 @@ type ErrorCallback = func(err error, item Task, processor Executor)
 type Option = func(c *PoolConfig)
 
 type PoolConfig struct {
-	batchSize         int
-	workers           int
-	chanSize       int
-	linger        time.Duration
-	batchExe      BatchExecutor
-	batchErrCb      BatchErrorCallback
-	exe    Executor
-	errCb  ErrorCallback
+	batchSize  int
+	workers    int
+	chanSize   int
+	linger     time.Duration
+	batchExe   BatchExecutor
+	batchErrCb BatchErrorCallback
+	exe        Executor
+	errCb      ErrorCallback
 }
 
 func BatchSize(sz int) Option {

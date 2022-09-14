@@ -6,10 +6,10 @@ import (
 )
 
 type Batcher struct {
-	config *PoolConfig
+	config    *PoolConfig
 	taskQueue chan Task
-	executor BatchExecutor
-	id int
+	executor  BatchExecutor
+	id        int
 }
 
 func (bat *Batcher) start() {
@@ -30,7 +30,7 @@ func (bat *Batcher) start() {
 
 	for {
 		select {
-		case task, ok := <- bat.taskQueue:
+		case task, ok := <-bat.taskQueue:
 			if !ok {
 				bat.process(batch)
 				batch = make([]Task, 0, batchSize)
@@ -80,13 +80,13 @@ func (bat *Batcher) quit() {
 	batch := make([]Task, 0, bat.config.batchSize)
 	for {
 		select {
-		case task, ok := <- bat.taskQueue:
+		case task, ok := <-bat.taskQueue:
 			if !ok {
-				fmt.Println("batcher close quit...", "id", bat.id,"batch", len(batch))
+				fmt.Println("batcher close quit...", "id", bat.id, "batch", len(batch))
 				bat.process(batch)
 				return
 			}
 			batch = append(batch, task)
 		}
-	}	
+	}
 }

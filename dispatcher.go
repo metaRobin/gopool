@@ -7,29 +7,29 @@ import (
 )
 
 const (
-	dispatcherStatusNone = 0
+	dispatcherStatusNone    = 0
 	dispatcherStatusRunning = 1
 	dispatcherStatusStopped = 2
 )
 
 // Dispatcher 一致性派发器
 type Dispatcher struct {
-	config         *PoolConfig
-	wg             *sync.WaitGroup
-	quit           chan struct{}
-	started	       chan struct{}
-	status         uint32 // 派发器状态
+	config   *PoolConfig
+	wg       *sync.WaitGroup
+	quit     chan struct{}
+	started  chan struct{}
+	status   uint32 // 派发器状态
 	batchExe BatchExecutor
 	exe      Executor
-	workers []Worker
+	workers  []Worker
 	batchers []Batcher
-	isBatch bool // 是否位批量处理
+	isBatch  bool // 是否位批量处理
 }
 
 func NewDispatcher(options ...Option) *Dispatcher {
 	config := &PoolConfig{
-		batchSize:  10,
-		workers:    2,
+		batchSize: 10,
+		workers:   2,
 	}
 
 	for i := range options {
@@ -46,7 +46,7 @@ func NewDispatcher(options ...Option) *Dispatcher {
 		quit:     make(chan struct{}),
 		started:  make(chan struct{}),
 		status:   dispatcherStatusNone,
-		exe: config.exe,
+		exe:      config.exe,
 		batchExe: config.batchExe,
 	}
 
@@ -68,7 +68,7 @@ func NewDispatcher(options ...Option) *Dispatcher {
 
 func (c *Dispatcher) start() {
 	if !c.isBatch {
-		for i := 0; i < c.config.workers; i ++ {
+		for i := 0; i < c.config.workers; i++ {
 			c.workers = append(c.workers, Worker{
 				config:    c.config,
 				taskQueue: make(chan interface{}, c.config.chanSize),
@@ -77,13 +77,13 @@ func (c *Dispatcher) start() {
 				id:        i,
 			})
 		}
-		
+
 		for i := range c.workers {
 			c.wg.Add(1)
 			go c.workers[i].start()
 		}
 	} else {
-		for i := 0; i < c.config.workers; i ++ {
+		for i := 0; i < c.config.workers; i++ {
 			c.batchers = append(c.batchers, Batcher{
 				config:    c.config,
 				taskQueue: make(chan interface{}, c.config.chanSize),
@@ -91,13 +91,12 @@ func (c *Dispatcher) start() {
 				id:        i,
 			})
 		}
-		
+
 		for i := range c.batchers {
 			c.wg.Add(1)
 			go c.batchers[i].start()
 		}
 	}
-	
 
 	c.started <- struct{}{}
 
@@ -123,7 +122,7 @@ func (c *Dispatcher) AddHashTask(h uint64, task Task) error {
 	if c.status != dispatcherStatusRunning {
 		return fmt.Errorf("hash dispatcher is stopped")
 	}
-	
+
 	if !c.isBatch {
 		idx := h % uint64(len(c.workers))
 		return c.workers[idx].addTask(task)
@@ -133,7 +132,7 @@ func (c *Dispatcher) AddHashTask(h uint64, task Task) error {
 		idx := h % uint64(len(c.batchers))
 		return c.batchers[idx].addTask(task)
 	}
-	
+
 	return fmt.Errorf("unknow executor to work")
 }
 

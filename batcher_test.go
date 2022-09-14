@@ -9,7 +9,7 @@ import (
 
 type task struct {
 	ctx context.Context
-	i int
+	i   int
 }
 
 func TestBatcher(t *testing.T) {
@@ -25,30 +25,30 @@ func TestBatcher(t *testing.T) {
 		fmt.Println("tasks:", tasks)
 		return nil
 	}
-	
+
 	bWorker := &Batcher{
-		config:    &PoolConfig{
+		config: &PoolConfig{
 			batchSize:  5,
 			chanSize:   5,
-			linger: 10*time.Millisecond,
+			linger:     10 * time.Millisecond,
 			batchErrCb: nil,
 		},
 		taskQueue: make(chan interface{}, 5),
-		executor: executor,
+		executor:  executor,
 	}
 	go bWorker.start()
 
-	for i := 0; i < 20; i ++ {
+	for i := 0; i < 20; i++ {
 		bWorker.addTask(&task{
 			ctx: context.Background(),
-			i :i,
+			i:   i,
 		})
-		if i%7==0 {
+		if i%7 == 0 {
 			fmt.Println("time sleep...")
-			time.Sleep(15*time.Millisecond)
+			time.Sleep(15 * time.Millisecond)
 		}
 	}
 	bWorker.quit()
-	time.Sleep(11*time.Millisecond)
+	time.Sleep(11 * time.Millisecond)
 	t.Log("batcher finished")
 }
